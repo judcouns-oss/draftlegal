@@ -199,17 +199,7 @@ function goToPayment(){
   setStep(2);showView('view-payment');
 }
 function goBack(){setStep(1);showView('view-form');}
-function processPayment(){
-  var btn=document.getElementById('pay-btn');
-  btn.disabled=true;btn.textContent='Processing...';
-  setTimeout(function(){
-    setStep(3);showView('view-loading');
-    var steps=['ls-1','ls-2','ls-3','ls-4'];
-    for(var i=0;i<steps.length;i++){
-      (function(idx){setTimeout(function(){document.getElementById(steps[idx]).classList.add('visible');},700*(idx+1));})(i);
-    }
-    setTimeout(generateContract,3500);
-  },1200);
+function processPayment(){window.location.href='https://counselorjud.gumroad.com/l/yxkmld';}{
 }
 function generateContract(){
   var fname=document.getElementById('f-name').value;
