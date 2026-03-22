@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DraftLegal — Professional Contract Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #1a1a18;
+  --paper: #faf9f6;
+  --cream: #f0ede6;
+  --gold: #b8976a;
+  --gold-light: #e8dcc8;
+  --muted: #7a7870;
+  --border: #ddd9d0;
+  --success: #2d6a4f;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--paper); font-family: 'DM Sans', sans-serif; color: var(--ink); }
+.site-header { border-bottom: 1px solid var(--border); padding: 18px 40px; display: flex; align-items: center; justify-content: space-between; background: var(--paper); }
+.logo { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--ink); }
+.logo span { color: var(--gold); }
+.hero { text-align: center; padding: 80px 24px 60px; }
+.hero h1 { font-family: 'Playfair Display', serif; font-size: 48px; font-weight: 400; margin-bottom: 16px; line-height: 1.15; }
+.hero p { font-size: 18px; color: var(--muted); max-width: 520px; margin: 0 auto 36px; line-height: 1.6; }
+.hero-badges { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 40px; }
+.badge { background: var(--cream); border: 1px solid var(--border); border-radius: 20px; padding: 6px 16px; font-size: 13px; color: var(--muted); }
+.btn-hero { background: var(--ink); color: white; border: none; padding: 16px 40px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 500; cursor: pointer; }
+.btn-hero:hover { background: #333; }
+.main { max-width: 680px; margin: 0 auto; padding: 0 24px 80px; }
+.steps-bar { display: flex; align-items: center; justify-content: center; gap: 0; padding: 20px 40px; border-bottom: 1px solid var(--border); background: var(--cream); margin-bottom: 48px; }
+.step { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+.step.active { color: var(--ink); }
+.step.done { color: var(--success); }
+.step-num { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; background: var(--paper); }
+.step.active .step-num { border-color: var(--gold); background: var(--gold); color: white; }
+.step.done .step-num { border-color: var(--success); background: var(--success); color: white; }
+.step-connector { width: 40px; height: 1px; background: var(--border); margin: 0 4px; }
+.step-connector.done { background: var(--success); }
+.section-title { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 400; margin-bottom: 8px; }
+.section-sub { font-size: 14px; color: var(--muted); margin-bottom: 32px; line-height: 1.5; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full { grid-column: 1 / -1; }
+label { font-size: 12px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+input, textarea, select { padding: 10px 14px; border: 1px solid var(--border); border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--ink); background: white; transition: border-color .15s; outline: none; }
+input:focus, textarea:focus, select:focus { border-color: var(--gold); }
+textarea { resize: vertical; min-height: 80px; }
+.price-box { background: var(--cream); border: 1px solid var(--gold-light); border-radius: 10px; padding: 16px 20px; margin: 24px 0; display: flex; align-items: center; justify-content: space-between; }
+.price-val { font-family: 'Playfair Display', serif; font-size: 28px; color: var(--ink); }
+.btn-primary { background: var(--ink); color: white; border: none; padding: 13px 28px; border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; width: 100%; margin-top: 8px; }
+.btn-primary:hover { background: #333; }
+.btn-primary:disabled { background: var(--muted); cursor: not-allowed; }
+.btn-secondary { background: transparent; color: var(--ink); border: 1px solid var(--border); padding: 10px 20px; border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer; display: block; margin: 12px auto 0; }
+.loading-state { text-align: center; padding: 60px 20px; }
+.spinner { width: 36px; height: 36px; border: 2px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-title { font-family: 'Playfair Display', serif; font-size: 22px; margin-bottom: 12px; }
+.loading-step { font-size: 13px; color: var(--muted); line-height: 2.2; opacity: 0; transition: opacity .4s; }
+.loading-step.visible { opacity: 1; }
+.contract-preview { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 40px 48px; font-size: 13.5px; line-height: 1.7; color: #2a2a28; max-height: 500px; overflow-y: auto; margin-bottom: 24px; }
+.contract-preview h1 { font-family: 'Playfair Display', serif; font-size: 22px; text-align: center; margin-bottom: 6px; }
+.contract-preview .contract-date { text-align: center; color: var(--muted); font-size: 12px; margin-bottom: 28px; }
+.contract-preview h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--gold); margin: 22px 0 8px; font-weight: 500; }
+.contract-preview p { margin-bottom: 12px; }
+.sig-row { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); }
+.sig-block { font-size: 12px; color: var(--muted); }
+.sig-line { border-bottom: 1px solid var(--ink); height: 32px; margin-bottom: 6px; }
+.success-icon { width: 56px; height: 56px; background: #e8f5ee; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 20px; }
+.download-btn { display: block; background: var(--success); color: white; border: none; padding: 14px 28px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; width: 100%; margin-bottom: 10px; font-family: 'DM Sans', sans-serif; }
+.hidden { display: none; }
+.pay-box { background: white; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 24px; }
+.pay-header { background: var(--cream); padding: 14px 20px; font-size: 13px; font-weight: 500; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; }
+.pay-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+.pay-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; font-weight: 500; margin-bottom: 5px; }
+.card-field { background: var(--paper); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; font-size: 14px; color: var(--ink); }
+.card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.order-summary { background: var(--cream); border-radius: 8px; padding: 14px 16px; font-size: 13px; margin-bottom: 20px; }
+.order-row { display: flex; justify-content: space-between; padding: 3px 0; }
+.order-row.total { font-weight: 500; border-top: 1px solid var(--border); margin-top: 8px; padding-top: 8px; }
+</style>
+</head>
+<body>
+
+<div class="site-header">
+  <div class="logo">Draft<span>.</span>legal</div>
+</div>
+
+<!-- HERO -->
+<div id="view-hero">
+  <div class="hero">
+    <h1>Professional contracts,<br>generated in seconds.</h1>
+    <p>Fill in your project details and get a lawyer-quality freelance contract instantly. No templates. AI-generated for your exact situation.</p>
+    <div class="hero-badges">
+      <span class="badge">Freelance agreements</span>
+      <span class="badge">NDAs</span>
+      <span class="badge">Service contracts</span>
+      <span class="badge">Instant PDF</span>
+    </div>
+    <button class="btn-hero" onclick="startFlow()">Generate my contract — $19 →</button>
+  </div>
+</div>
+
+<div class="steps-bar hidden" id="steps-bar">
+  <div class="step active" id="step-1"><div class="step-num">1</div> Fill details</div>
+  <div class="step-connector" id="conn-1"></div>
+  <div class="step" id="step-2"><div class="step-num">2</div> Review & pay</div>
+  <div class="step-connector" id="conn-2"></div>
+  <div class="step" id="step-3"><div class="step-num">3</div> Download</div>
+</div>
+
+<div class="main">
+
+  <!-- FORM -->
+  <div id="view-form" class="hidden">
+    <div class="section-title">Your contract details</div>
+    <div class="section-sub">Fill in the fields below. Your contract will be ready in seconds.</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Your name (Freelancer)</label>
+        <input type="text" id="f-name" placeholder="Your full name">
+      </div>
+      <div class="form-group">
+        <label>Client name</label>
+        <input type="text" id="c-name" placeholder="Client or company name">
+      </div>
+      <div class="form-group">
+        <label>Project title</label>
+        <input type="text" id="proj-title" placeholder="e.g. Website Redesign">
+      </div>
+      <div class="form-group">
+        <label>Total project value</label>
+        <input type="text" id="proj-value" placeholder="e.g. $2,500 USD">
+      </div>
+      <div class="form-group">
+        <label>Payment terms</label>
+        <select id="pay-terms">
+          <option>50% upfront, 50% on delivery</option>
+          <option>100% upfront</option>
+          <option>Monthly installments</option>
+          <option>Net 30 after delivery</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Project duration</label>
+        <input type="text" id="duration" placeholder="e.g. 3 weeks">
+      </div>
+      <div class="form-group">
+        <label>Your location</label>
+        <input type="text" id="f-loc" placeholder="City, State">
+      </div>
+      <div class="form-group">
+        <label>Client location</label>
+        <input type="text" id="c-loc" placeholder="City, State">
+      </div>
+      <div class="form-group full">
+        <label>Scope of work</label>
+        <textarea id="scope" placeholder="Describe what you will deliver..."></textarea>
+      </div>
+    </div>
+    <div class="price-box">
+      <div>
+        <div style="font-size:13px;color:var(--muted);">One-time document fee</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px;">AI-generated • Instant PDF delivery</div>
+      </div>
+      <div style="text-align:right">
+        <div class="price-val">$19</div>
+        <div style="font-size:11px;color:var(--muted);">Save ~$400 vs a lawyer</div>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="goToPayment()">Continue to payment →</button>
+  </div>
+
+  <!-- PAYMENT -->
+  <div id="view-payment" class="hidden">
+    <div class="section-title">Review & Pay</div>
+    <div class="section-sub">Complete payment to generate your contract.</div>
+    <div class="order-summary">
+      <div class="order-row"><span>Freelance Service Agreement</span><span>$19.00</span></div>
+      <div class="order-row total"><span>Total</span><span>$19.00 USD</span></div>
+    </div>
+    <div class="pay-box">
+      <div class="pay-header"><span>Payment details</span><span style="color:var(--muted);font-size:12px;">🔒 Secured by Lemon Squeezy</span></div>
+      <div class="pay-body">
+        <div>
+          <div class="pay-label">Card number</div>
+          <input type="text" class="card-field" placeholder="1234 5678 9012 3456">
+        </div>
+        <div class="card-grid">
+          <div>
+            <div class="pay-label">Expiry</div>
+            <input type="text" class="card-field" placeholder="MM / YY">
+          </div>
+          <div>
+            <div class="pay-label">CVC</div>
+            <input type="text" class="card-field" placeholder="•••">
+          </div>
+        </div>
+        <div>
+          <div class="pay-label">Email for delivery</div>
+          <input type="email" class="card-field" id="client-email" placeholder="your@email.com">
+        </div>
+      </div>
+    </div>
+    <button class="btn-primary" id="pay-btn" onclick="processPayment()">Pay $19.00 and generate contract →</button>
+    <button class="btn-secondary" onclick="goBack()">← Back</button>
+  </div>
+
+  <!-- LOADING -->
+  <div id="view-loading" class="hidden">
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <div class="loading-title">Generating your contract…</div>
+      <div class="loading-step" id="ls-1">✦ &nbsp;Analyzing your project details</div>
+      <div class="loading-step" id="ls-2">✦ &nbsp;Drafting legal clauses with AI</div>
+      <div class="loading-step" id="ls-3">✦ &nbsp;Adding payment and IP terms</div>
+      <div class="loading-step" id="ls-4">✦ &nbsp;Formatting your document</div>
+    </div>
+  </div>
+
+  <!-- CONTRACT -->
+  <div id="view-contract" class="hidden">
+    <div class="section-title">Your contract is ready</div>
+    <div class="section-sub">Review below and download your PDF.</div>
+    <div class="contract-preview" id="contract-output"></div>
+    <button class="download-btn" onclick="showSuccess()">⬇ Download PDF Contract</button>
+  </div>
+
+  <!-- SUCCESS -->
+  <div id="view-success" class="hidden">
+    <div style="text-align:center;padding:20px 0 32px;">
+      <div class="success-icon">✓</div>
+      <div class="section-title" style="margin-bottom:8px;">Contract sent to your email</div>
+      <div class="section-sub">Your professional contract is ready. Forward it to your client for signature.</div>
+    </div>
+    <button class="btn-primary" onclick="location.reload()">Generate another contract</button>
+  </div>
+
+</div>
+
+<script>
+const ANTHROPIC_KEY = '';
+
+function startFlow() {
+  document.getElementById('view-hero').classList.add('hidden');
+  document.getElementById('steps-bar').classList.remove('hidden');
+  show('view-form');
+}
+
+function setStep(n) {
+  for (let i = 1; i <= 3; i++) {
+    const el = document.getElementById('step-' + i);
+    el.className = 'step' + (i < n ? ' done' : i === n ? ' active' : '');
+    el.querySelector('.step-num').textContent = i < n ? '✓' : i;
+  }
+  for (let i = 1; i <= 2; i++) {
+    document.getElementById('conn-' + i).className = 'step-connector' + (i < n ? ' done' : '');
+  }
+}
+
+function show(id) {
+  ['view-form','view-payment','view-loading','view-contract','view-success'].forEach(v => {
+    document.getElementById(v).classList.add('hidden');
+  });
+  document.getElementById(id).classList.remove('hidden');
+  window.scrollTo(0,0);
+}
+
+function goToPayment() {
+  const fname = document.getElementById('f-name').value;
+  const cname = document.getElementById('c-name').value;
+  if (!fname || !cname) { alert('Please fill in at least your name and client name.'); return; }
+  setStep(2); show('view-payment');
+}
+
+function goBack() { setStep(1); show('view-form'); }
+
+async function processPayment() {
+  const btn = document.getElementById('pay-btn');
+  btn.disabled = true; btn.textContent = 'Processing…';
+  await new Promise(r => setTimeout(r, 1200));
+  setStep(3); show('view-loading');
+  const steps = ['ls-1','ls-2','ls-3','ls-4'];
+  for (let i = 0; i < steps.length; i++) {
+    await new Promise(r => setTimeout(r, 700));
+    document.getElementById(steps[i]).classList.add('visible');
+  }
+  await generateContract();
+}
+
+async function generateContract() {
+  const fname = document.getElementById('f-name').value;
+  const cname = document.getElementById('c-name').value;
+  const title = document.getElementById('proj-title').value;
+  const value = document.getElementById('proj-value').value;
+  const terms = document.getElementById('pay-terms').value;
+  const dur   = document.getElementById('duration').value;
+  const floc  = document.getElementById('f-loc').value;
+  const cloc  = document.getElementById('c-loc').value;
+  const scope = document.getElementById('scope').value;
+  const today = new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'});
+
+  const prompt = `Generate a professional freelance service agreement with these details:
+Freelancer: ${fname}, located in ${floc}
+Client: ${cname}, located in ${cloc}
+Project: ${title}
+Value: ${value}
+Payment terms: ${terms}
+Duration: ${dur}
+Scope: ${scope}
+Date: ${today}
+
+Write a complete professional contract in plain English with these sections:
+1. PARTIES
+2. SCOPE OF WORK
+3. COMPENSATION AND PAYMENT
+4. TIMELINE
+5. INTELLECTUAL PROPERTY
+6. REVISIONS
+7. CONFIDENTIALITY
+8. TERMINATION
+9. LIMITATION OF LIABILITY
+10. SIGNATURES
+Keep each section concise and professional.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-api-key-access': 'true' },
+      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 1500, messages: [{ role: 'user', content: prompt }] })
+    });
+    const data = await res.json();
+    renderContract(data.content.map(b => b.text || '').join(''), fname, cname, title, today);
+  } catch(e) {
+    renderContract('Error generating contract. Please try again.', fname, cname, title, today);
+  }
+}
+
+function renderContract(text, fname, cname, title, today) {
+  const el = document.getElementById('contract-output');
+  let html = `<h1>Freelance Service Agreement</h1><div class="contract-date">${title} &nbsp;·&nbsp; ${today}</div>`;
+  const lines = text.split('\n').filter(l => l.trim());
+  for (const line of lines) {
+    const t = line.trim();
+    if (/^\d+\.\s+[A-Z]/.test(t) || /^[A-Z\s]{5,}$/.test(t)) {
+      html += `<h2>${t.replace(/^\d+\.\s+/, '')}</h2>`;
+    } else if (t) {
+      html += `<p>${t}</p>`;
+    }
+  }
+  html += `<div class="sig-row"><div class="sig-block"><div class="sig-line"></div><strong>${fname}</strong><br>Freelancer</div><div class="sig-block"><div class="sig-line"></div><strong>${cname}</strong><br>Client</div></div>`;
+  el.innerHTML = html;
+  show('view-contract');
+}
+
+function showSuccess() {
+  document.querySelectorAll('.step').forEach((s,i) => { s.className='step done'; s.querySelector('.step-num').textContent='✓'; });
+  show('view-success');
+}
+</script>
+</body>
+</html>
